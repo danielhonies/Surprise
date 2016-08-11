@@ -5,11 +5,12 @@
     },
     {
       "idiom" : "mac",
+      "filename" : "font-awesome_4-6-3_picture-o_16_0_000000_none.png",
       "scale" : "1x"
     },
     {
       "idiom" : "mac",
-      "filename" : "StatusBarButtonImage@2x.png",
+      "filename" : "font-awesome_4-6-3_picture-o_32_0_000000_none.png",
       "scale" : "2x"
     }
   ],

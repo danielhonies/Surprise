@@ -29,12 +29,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             for s in sources{
                 menu.addItem(NSMenuItem(title: s.name, action: #selector(AppDelegate.setPicture(_:)), keyEquivalent: s.bind))
             }
-             menu.addItem(NSMenuItem.separatorItem())
+            menu.addItem(NSMenuItem.separatorItem())
             menu.addItem(NSMenuItem(title: "Quit Surprise", action: Selector("terminate:"), keyEquivalent: "q"))
             statusItem.menu = menu
         }
     }
-
+    
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
     }
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             downloadImage(url!, screen: screen)
         }
     }
-
+    
     func reset(){
         let task = NSTask()
         task.launchPath = "/bin/bash"
@@ -68,21 +68,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let data = data where error == nil else { return }
                 print(response?.suggestedFilename ?? "")
                 print("Download Finished")
-               
+                
                 do{
+                    let homeDirectory = NSHomeDirectory()
+                    let dataPath = NSURL(fileURLWithPath: homeDirectory).URLByAppendingPathComponent("Surprise")
+                    
+                    do {
+                        try NSFileManager.defaultManager().createDirectoryAtPath(dataPath.path!, withIntermediateDirectories: true, attributes: nil)
+                    } catch let error as NSError {
+                        print(error.localizedDescription);
+                    }
+                    
                     let workspace = NSWorkspace.sharedWorkspace()
-                    let path = "/Users/danielhonies/" + NSUUID().UUIDString + ".jpeg"
+                    let path = dataPath.path! + "/" + NSUUID().UUIDString + ".jpeg"
+                    print(path);
                     let fileManager = NSFileManager.defaultManager()
-                fileManager.createFileAtPath(path, contents: data, attributes: nil)
-                try workspace.setDesktopImageURL(NSURL(fileURLWithPath: path), forScreen: screen, options: [:])
+                    fileManager.createFileAtPath(path, contents: data, attributes: nil)
+                    try workspace.setDesktopImageURL(NSURL(fileURLWithPath: path), forScreen: screen, options: [:])
                     self.reset()
                 }
                 catch{
-                print(error)
+                    print(error)
                 }
             }
         }
     }
-
+    
 }
 
