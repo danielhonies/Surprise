@@ -7,5 +7,6 @@ Suprise will live in your Menu Bar and with one click you can set a new Backgrou
 - Buildings
 - Nature
 - Technology
+
 # License
 This project is licensed under the terms of the MIT license. See the LICENSE file.
