@@ -17,9 +17,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     @IBOutlet weak var window: NSWindow!
     var sources: [Source] = []
-    let statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(-2)
+    let statusItem = NSStatusBar.system().statusItem(withLength: -2)
     
-    func applicationDidFinishLaunching(aNotification: NSNotification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarButtonImage")
             let menu = NSMenu()
@@ -29,62 +29,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             for s in sources{
                 menu.addItem(NSMenuItem(title: s.name, action: #selector(AppDelegate.setPicture(_:)), keyEquivalent: s.bind))
             }
-            menu.addItem(NSMenuItem.separatorItem())
-            menu.addItem(NSMenuItem(title: "Quit Surprise", action: Selector("terminate:"), keyEquivalent: "q"))
+            menu.addItem(NSMenuItem.separator())
+            //menu.addItem(NSMenuItem(title: "Quit Surprise", action: #selector(NSInputServiceProvider.terminate(_:)), keyEquivalent: "q"))
             statusItem.menu = menu
         }
     }
     
-    func applicationWillTerminate(aNotification: NSNotification) {
+    func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
-    func setPicture(sender: AnyObject) {
-        let myURLstring = sources[statusItem.menu!.indexOfItem(sender as! NSMenuItem)].ref
-        let url = NSURL(string: myURLstring)
-        if let screen = NSScreen.mainScreen()  {
+    func setPicture(_ sender: AnyObject) {
+        let myURLstring = sources[statusItem.menu!.index(of: sender as! NSMenuItem)].ref
+        let url = URL(string: myURLstring)
+        if let screen = NSScreen.main()  {
             downloadImage(url!, screen: screen)
         }
     }
     
     func reset(){
-        let task = NSTask()
+        let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c",
                           "killall Dock"]
         task.launch()
     }
     
-    func getDataFromUrl(url:NSURL, completion: ((data: NSData?, response: NSURLResponse?, error: NSError? ) -> Void)) {
-        NSURLSession.sharedSession().dataTaskWithURL(url) { (data, response, error) in
-            completion(data: data, response: response, error: error)
-            }.resume()
+    func getDataFromUrl(_ url:URL, completion: @escaping ((_ data: Data?, _ response: URLResponse?, _ error: NSError? ) -> Void)) {
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+            completion(data, response, error as NSError?)
+            return()
+            }) .resume()
     }
     
-    func downloadImage(url: NSURL, screen: NSScreen){
+    func downloadImage(_ url: URL, screen: NSScreen){
         print("Download Started")
         print("lastPathComponent: " + (url.lastPathComponent ?? ""))
         getDataFromUrl(url) { (data, response, error)  in
-            dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                guard let data = data where error == nil else { return }
+            DispatchQueue.main.async { () -> Void in
+                guard let data = data, error == nil else { return }
                 print(response?.suggestedFilename ?? "")
                 print("Download Finished")
                 
                 do{
                     let homeDirectory = NSHomeDirectory()
-                    let dataPath = NSURL(fileURLWithPath: homeDirectory).URLByAppendingPathComponent("Surprise")
+                    let dataPath = URL(fileURLWithPath: homeDirectory).appendingPathComponent("Surprise")
                     
                     do {
-                        try NSFileManager.defaultManager().createDirectoryAtPath(dataPath.path!, withIntermediateDirectories: true, attributes: nil)
+                        try FileManager.default.createDirectory(atPath: dataPath.path, withIntermediateDirectories: true, attributes: nil)
                     } catch let error as NSError {
                         print(error.localizedDescription);
                     }
                     
-                    let workspace = NSWorkspace.sharedWorkspace()
-                    let path = dataPath.path! + "/" + NSUUID().UUIDString + ".jpeg"
+                    let workspace = NSWorkspace.shared()
+                    let path = dataPath.path + "/" + UUID().uuidString + ".jpeg"
                     print(path);
-                    let fileManager = NSFileManager.defaultManager()
-                    fileManager.createFileAtPath(path, contents: data, attributes: nil)
-                    try workspace.setDesktopImageURL(NSURL(fileURLWithPath: path), forScreen: screen, options: [:])
+                    let fileManager = FileManager.default
+                    fileManager.createFile(atPath: path, contents: data, attributes: nil)
+                    try workspace.setDesktopImageURL(URL(fileURLWithPath: path), for: screen, options: [:])
                     self.reset()
                 }
                 catch{

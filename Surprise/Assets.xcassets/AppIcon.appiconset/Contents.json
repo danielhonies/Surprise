@@ -41,14 +41,14 @@
       "scale" : "2x"
     },
     {
-      "idiom" : "mac",
-      "size" : "512x512",
-      "scale" : "1x"
-    },
-    {
       "size" : "512x512",
       "idiom" : "mac",
       "filename" : "font-awesome_4-6-3_picture-o_512_0_2b31c0_none.png",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "512x512",
       "scale" : "2x"
     }
   ],
